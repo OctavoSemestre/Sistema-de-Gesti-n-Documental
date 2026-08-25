@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Documental - Alcaldía Municipal de Samaná</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- PANTALLA 1: LOGIN -->
+    <div id="pantalla-login" class="container container-login">
+        <div class="card card-login">
+            <h2 class="title-main">Alcaldía de Samaná</h2>
+            <p class="subtitle">Sistema de Gestión Documental</p>
+            <form id="form-login">
+                <div class="form-group text-left">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" value="usuario@samana.gov.co" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" value="123456" required>
+                </div>
+                <div class="form-group text-left">
+                    <label for="rol-select">Perfil de usuario</label>
+                    <select id="rol-select">
+                        <option value="Administrador">Administrador</option>
+                        <option value="Funcionario" selected>Funcionario</option>
+                        <option value="Técnico">Técnico</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-full">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN Y PANEL PRINCIPAL -->
+    <div id="app-main" class="hidden">
+        <header>
+            <div>
+                <h3>Alcaldía Municipal de Samaná</h3>
+                <small>Secretaría de Gobierno | Gestión Documental</small>
+            </div>
+            <div>
+                <span id="usuario-info"></span>
+                <button id="btn-salir" class="btn btn-danger">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- PANTALLA 2: CONSULTA DE EXPEDIENTES -->
+            <div id="seccion-consulta" class="card">
+                <div class="header-flex">
+                    <h2>Expedientes Registrados</h2>
+                    <div>
+                        <button id="btn-registrar-usuario" class="btn btn-secondary btn-admin-only hidden">+ Nuevo Usuario</button>
+                        <button id="btn-nuevo-exp" class="btn">+ Nuevo Expediente</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" placeholder="Buscar expediente por código, serie o ubicación...">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Serie</th>
+                            <th>Subserie</th>
+                            <th>Ubicación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EXP-2026-001</td>
+                            <td>Contratación</td>
+                            <td>Licitaciones Públicas</td>
+                            <td><span class="badge">Archivo de Gestión</span></td>
+                            <td>
+                                <button class="btn btn-ver-doc">Documentos</button>
+                                <button class="btn btn-editar solo-funcionario">Editar</button>
+                                <button class="btn btn-danger btn-eliminar btn-admin-only hidden">Eliminar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>EXP-2026-002</td>
+                            <td>Talento Humano</td>
+                            <td>Hojas de Vida</td>
+                            <td><span class="badge">Archivo Central</span></td>
+                            <td>
+                                <button class="btn btn-ver-doc">Documentos</button>
+                                <button class="btn btn-editar solo-funcionario">Editar</button>
+                                <button class="btn btn-danger btn-eliminar btn-admin-only hidden">Eliminar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PANTALLA 3: CREAR Y EDITAR EXPEDIENTE -->
+            <div id="seccion-crear" class="card hidden">
+                <h2 id="titulo-form-exp">Registrar Nuevo Expediente</h2>
+                <br>
+                <form id="form-crear-exp">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Código del Expediente</label>
+                            <input type="text" placeholder="Ej: EXP-2026-003" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Serie Documental</label>
+                            <input type="text" placeholder="Ej: Hacienda" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Subserie Documental</label>
+                            <input type="text" placeholder="Ej: Impuestos" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Ubicación Física</label>
+                            <select>
+                                <option>Archivo de Gestión</option>
+                                <option>Archivo Central</option>
+                                <option>Archivo Histórico</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Inicial</label>
+                            <input type="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Final (Opcional)</label>
+                            <input type="date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Observaciones</label>
+                        <textarea rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Guardar</button>
+                    <button type="button" id="btn-cancelar-crear" class="btn btn-danger">Cancelar</button>
+                </form>
+            </div>
+
+            <!-- PANTALLA 4: GESTIÓN DE DOCUMENTOS ADJUNTOS -->
+            <div id="seccion-documentos" class="card hidden">
+                <h2>Expediente: EXP-2026-001</h2>
+                <p class="subtitle-dark">Serie: Contratación | Subserie: Licitaciones Públicas</p>
+                <hr class="divider">
+
+                <div class="form-group solo-funcionario" id="zona-carga">
+                    <label>Adjuntar documento electrónico (PDF):</label>
+                    <input type="file" accept=".pdf">
+                    <button type="button" id="btn-asociar-doc" class="btn btn-space">Cargar Archivo</button>
+                </div>
+
+                <h3>Documentos Adjuntos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre del Archivo</th>
+                            <th>Tipo</th>
+                            <th>Fecha de Carga</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pliego_de_Condiciones.pdf</td>
+                            <td>PDF</td>
+                            <td>2026-08-20</td>
+                            <td>
+                                <button type="button" class="btn btn-descargar">Descargar</button>
+                                <button type="button" class="btn btn-danger btn-eliminar btn-admin-only hidden">Eliminar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                <button type="button" id="btn-volver-lista" class="btn btn-secondary">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
