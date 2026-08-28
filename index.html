@@ -8,26 +8,29 @@
 </head>
 <body>
 
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
     <!-- PANTALLA 1: LOGIN -->
     <div id="pantalla-login" class="container container-login">
         <div class="card card-login">
             <h2 class="title-main">Alcaldía de Samaná</h2>
-            <p class="subtitle">Sistema de Gestión Documental</p>
+            <p class="subtitle">Sistema de Gestión Documental y Archivo Digital</p>
             <form id="form-login">
                 <div class="form-group text-left">
-                    <label for="email">Correo electrónico</label>
-                    <input type="email" id="email" value="usuario@samana.gov.co" required>
+                    <label for="login-email">Correo electrónico</label>
+                    <input type="email" id="login-email" value="funcionario@samana.gov.co" required>
                 </div>
                 <div class="form-group text-left">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" value="123456" required>
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" value="123456" required>
                 </div>
                 <div class="form-group text-left">
-                    <label for="rol-select">Perfil de usuario</label>
-                    <select id="rol-select">
-                        <option value="Administrador">Administrador</option>
-                        <option value="Funcionario" selected>Funcionario</option>
-                        <option value="Técnico">Técnico</option>
+                    <label for="login-rol">Perfil de usuario (RBAC)</label>
+                    <select id="login-rol" required>
+                        <option value="Administrador">Administrador (Acceso total)</option>
+                        <option value="Funcionario" selected>Funcionario (Crear, Editar, Cargar)</option>
+                        <option value="Técnico">Técnico (Solo Lectura y Descarga)</option>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-full">Iniciar Sesión</button>
@@ -40,148 +43,140 @@
         <header>
             <div>
                 <h3>Alcaldía Municipal de Samaná</h3>
-                <small>Secretaría de Gobierno | Gestión Documental</small>
+                <small>Secretaría de Gobierno | Gestión Documental y Archivo Cloud</small>
             </div>
-            <div>
-                <span id="usuario-info"></span>
-                <button id="btn-salir" class="btn btn-danger">Cerrar Sesión</button>
+            <div class="user-badge-container">
+                <span id="usuario-info" class="user-tag"></span>
+                <button id="btn-salir" class="btn btn-danger btn-sm">Cerrar Sesión</button>
             </div>
         </header>
 
-        <div class="container">
+        <main class="container">
             <!-- PANTALLA 2: CONSULTA DE EXPEDIENTES -->
-            <div id="seccion-consulta" class="card">
+            <section id="seccion-consulta" class="card">
                 <div class="header-flex">
-                    <h2>Expedientes Registrados</h2>
                     <div>
-                        <button id="btn-registrar-usuario" class="btn btn-secondary btn-admin-only hidden">+ Nuevo Usuario</button>
-                        <button id="btn-nuevo-exp" class="btn">+ Nuevo Expediente</button>
+                        <h2>Expedientes Registrados</h2>
+                        <p class="subtitle-small">Catálogo institucional de retención documental</p>
+                    </div>
+                    <div class="action-buttons-header">
+                        <button id="btn-registrar-usuario" class="btn btn-secondary action-admin hidden">+ Nuevo Usuario</button>
+                        <button id="btn-nuevo-exp" class="btn action-write">+ Nuevo Expediente</button>
                     </div>
                 </div>
-                <div class="form-group">
-                    <input type="text" placeholder="Buscar expediente por código, serie o ubicación...">
+
+                <div class="form-group search-box">
+                    <input type="text" id="input-busqueda-exp" placeholder="Buscar expediente por código, serie, subserie o ubicación...">
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Serie</th>
-                            <th>Subserie</th>
-                            <th>Ubicación</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>EXP-2026-001</td>
-                            <td>Contratación</td>
-                            <td>Licitaciones Públicas</td>
-                            <td><span class="badge">Archivo de Gestión</span></td>
-                            <td>
-                                <button class="btn btn-ver-doc">Documentos</button>
-                                <button class="btn btn-editar solo-funcionario">Editar</button>
-                                <button class="btn btn-danger btn-eliminar btn-admin-only hidden">Eliminar</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>EXP-2026-002</td>
-                            <td>Talento Humano</td>
-                            <td>Hojas de Vida</td>
-                            <td><span class="badge">Archivo Central</span></td>
-                            <td>
-                                <button class="btn btn-ver-doc">Documentos</button>
-                                <button class="btn btn-editar solo-funcionario">Editar</button>
-                                <button class="btn btn-danger btn-eliminar btn-admin-only hidden">Eliminar</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Serie</th>
+                                <th>Subserie</th>
+                                <th>Ubicación</th>
+                                <th>Documentos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-expedientes-body">
+                            <!-- Dynamic Content Rendered via Presenter -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <!-- PANTALLA 3: CREAR Y EDITAR EXPEDIENTE -->
-            <div id="seccion-crear" class="card hidden">
+            <section id="seccion-crear" class="card hidden">
                 <h2 id="titulo-form-exp">Registrar Nuevo Expediente</h2>
-                <br>
+                <p class="subtitle-small">Diligencie los campos requeridos según las directrices de la TRD.</p>
+                <hr class="divider">
                 <form id="form-crear-exp">
+                    <input type="hidden" id="exp-is-edit" value="0">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Código del Expediente</label>
-                            <input type="text" placeholder="Ej: EXP-2026-003" required>
+                            <label for="exp-code">Código del Expediente</label>
+                            <input type="text" id="exp-code" placeholder="Ej: EXP-2026-003" required>
                         </div>
                         <div class="form-group">
-                            <label>Serie Documental</label>
-                            <input type="text" placeholder="Ej: Hacienda" required>
+                            <label for="exp-series">Serie Documental</label>
+                            <input type="text" id="exp-series" placeholder="Ej: Hacienda" required>
                         </div>
                         <div class="form-group">
-                            <label>Subserie Documental</label>
-                            <input type="text" placeholder="Ej: Impuestos" required>
+                            <label for="exp-subseries">Subserie Documental</label>
+                            <input type="text" id="exp-subseries" placeholder="Ej: Impuestos" required>
                         </div>
                         <div class="form-group">
-                            <label>Ubicación Física</label>
-                            <select>
-                                <option>Archivo de Gestión</option>
-                                <option>Archivo Central</option>
-                                <option>Archivo Histórico</option>
+                            <label for="exp-location">Ubicación Física</label>
+                            <select id="exp-location" required>
+                                <option value="Archivo de Gestión">Archivo de Gestión</option>
+                                <option value="Archivo Central">Archivo Central</option>
+                                <option value="Archivo Histórico">Archivo Histórico</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Fecha Inicial</label>
-                            <input type="date" required>
+                            <label for="exp-start-date">Fecha Inicial</label>
+                            <input type="date" id="exp-start-date" required>
                         </div>
                         <div class="form-group">
-                            <label>Fecha Final (Opcional)</label>
-                            <input type="date">
+                            <label for="exp-end-date">Fecha Final (Opcional)</label>
+                            <input type="date" id="exp-end-date">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Observaciones</label>
-                        <textarea rows="3"></textarea>
+                        <label for="exp-observations">Observaciones</label>
+                        <textarea id="exp-observations" rows="3" placeholder="Anotaciones adicionales o antecedentes del expediente..."></textarea>
                     </div>
-                    <button type="submit" class="btn">Guardar</button>
-                    <button type="button" id="btn-cancelar-crear" class="btn btn-danger">Cancelar</button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Guardar Expediente</button>
+                        <button type="button" id="btn-cancelar-crear" class="btn btn-secondary">Cancelar</button>
+                    </div>
                 </form>
-            </div>
+            </section>
 
             <!-- PANTALLA 4: GESTIÓN DE DOCUMENTOS ADJUNTOS -->
-            <div id="seccion-documentos" class="card hidden">
-                <h2>Expediente: EXP-2026-001</h2>
-                <p class="subtitle-dark">Serie: Contratación | Subserie: Licitaciones Públicas</p>
+            <section id="seccion-documentos" class="card hidden">
+                <div class="header-flex">
+                    <div>
+                        <h2 id="doc-exp-code-title">Expediente: -</h2>
+                        <p id="doc-exp-details-subtitle" class="subtitle-dark">Serie: - | Subserie: -</p>
+                    </div>
+                    <button type="button" id="btn-volver-lista" class="btn btn-secondary">← Volver a Expedientes</button>
+                </div>
                 <hr class="divider">
 
-                <div class="form-group solo-funcionario" id="zona-carga">
-                    <label>Adjuntar documento electrónico (PDF):</label>
-                    <input type="file" accept=".pdf">
-                    <button type="button" id="btn-asociar-doc" class="btn btn-space">Cargar Archivo</button>
+                <div class="form-group action-write" id="zona-carga">
+                    <label for="input-archivo-doc"><strong>Adjuntar Documento Digital (PDF) al Expediente Cloud:</strong></label>
+                    <div class="upload-control-group">
+                        <input type="file" id="input-archivo-doc" accept=".pdf,application/pdf">
+                        <button type="button" id="btn-asociar-doc" class="btn">Cargar a la Nube (S3 Vault)</button>
+                    </div>
                 </div>
 
-                <h3>Documentos Adjuntos</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre del Archivo</th>
-                            <th>Tipo</th>
-                            <th>Fecha de Carga</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Pliego_de_Condiciones.pdf</td>
-                            <td>PDF</td>
-                            <td>2026-08-20</td>
-                            <td>
-                                <button type="button" class="btn btn-descargar">Descargar</button>
-                                <button type="button" class="btn btn-danger btn-eliminar btn-admin-only hidden">Eliminar</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <br>
-                <button type="button" id="btn-volver-lista" class="btn btn-secondary">Volver</button>
-            </div>
-        </div>
+                <h3>Documentos Digitales Asociados</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre del Archivo</th>
+                                <th>Tamaño</th>
+                                <th>Fecha de Carga</th>
+                                <th>Destino Cloud</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-documentos-body">
+                            <!-- Dynamic Documents Rendered via Presenter -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Modular Application Entry Point -->
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
