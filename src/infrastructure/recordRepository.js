@@ -26,19 +26,22 @@ export class LocalStorageRecordRepository extends IRecordRepository {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) {
             this._seedInitialData();
-        } else {
-            try {
-                const parsed = JSON.parse(raw);
-                this._cache.clear();
-                parsed.forEach(item => {
-                    const record = RecordArchive.fromJSON(item);
-                    this._cache.set(record.code, record);
-                });
-            } catch (err) {
-                console.error('[Repository] Failed to parse local storage, re-seeding.', err);
-                this._seedInitialData();
-            }
+            this._isInitialized = true;
+            return;
         }
+
+        try {
+            const parsed = JSON.parse(raw);
+            this._cache.clear();
+            parsed.forEach(item => {
+                const record = RecordArchive.fromJSON(item);
+                this._cache.set(record.code, record);
+            });
+        } catch (err) {
+            console.error('[Repository] Failed to parse local storage, re-seeding.', err);
+            this._seedInitialData();
+        }
+
         this._isInitialized = true;
     }
 

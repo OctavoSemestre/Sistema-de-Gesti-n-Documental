@@ -93,12 +93,13 @@ class AppController {
 
     init() {
         const currentUser = authService.getCurrentUser();
-        if (currentUser) {
-            this._handleAuthStateChanged(currentUser);
-        } else {
+        if (!currentUser) {
             this.pantallaLogin.classList.remove('hidden');
             this.appMain.classList.add('hidden');
+            return;
         }
+
+        this._handleAuthStateChanged(currentUser);
     }
 
     /**
@@ -137,19 +138,9 @@ class AppController {
         const canWrite = user.can(Permission.CREATE_RECORD);
         const canAdmin = user.can(Permission.MANAGE_USERS);
 
-        if (canWrite) {
-            this.btnNuevoExp.classList.remove('hidden');
-            this.zonaCarga.classList.remove('hidden');
-        } else {
-            this.btnNuevoExp.classList.add('hidden');
-            this.zonaCarga.classList.add('hidden');
-        }
-
-        if (canAdmin) {
-            this.btnRegistrarUsuario.classList.remove('hidden');
-        } else {
-            this.btnRegistrarUsuario.classList.add('hidden');
-        }
+        this.btnNuevoExp.classList.toggle('hidden', !canWrite);
+        this.zonaCarga.classList.toggle('hidden', !canWrite);
+        this.btnRegistrarUsuario.classList.toggle('hidden', !canAdmin);
 
         this._showListView();
         this._renderRecordsList();
@@ -173,18 +164,7 @@ class AppController {
         this.seccionDocumentos.classList.add('hidden');
         this.seccionCrear.classList.remove('hidden');
 
-        if (recordToEdit) {
-            this.tituloFormExp.innerText = `Modificar Expediente: ${recordToEdit.code}`;
-            this.expIsEdit.value = recordToEdit.code;
-            this.expCode.value = recordToEdit.code;
-            this.expCode.disabled = true;
-            this.expSeries.value = recordToEdit.series;
-            this.expSubseries.value = recordToEdit.subseries;
-            this.expLocation.value = recordToEdit.location;
-            this.expStartDate.value = recordToEdit.formattedStartDate;
-            this.expEndDate.value = recordToEdit.formattedEndDate;
-            this.expObservations.value = recordToEdit.observations || '';
-        } else {
+        if (!recordToEdit) {
             this.tituloFormExp.innerText = 'Registrar Nuevo Expediente';
             this.expIsEdit.value = '0';
             this.expCode.value = '';
@@ -195,7 +175,19 @@ class AppController {
             this.expStartDate.value = new Date().toISOString().split('T')[0];
             this.expEndDate.value = '';
             this.expObservations.value = '';
+            return;
         }
+
+        this.tituloFormExp.innerText = `Modificar Expediente: ${recordToEdit.code}`;
+        this.expIsEdit.value = recordToEdit.code;
+        this.expCode.value = recordToEdit.code;
+        this.expCode.disabled = true;
+        this.expSeries.value = recordToEdit.series;
+        this.expSubseries.value = recordToEdit.subseries;
+        this.expLocation.value = recordToEdit.location;
+        this.expStartDate.value = recordToEdit.formattedStartDate;
+        this.expEndDate.value = recordToEdit.formattedEndDate;
+        this.expObservations.value = recordToEdit.observations || '';
     }
 
     /**
@@ -233,10 +225,11 @@ class AppController {
      * @private
      */
     async _renderRecordsList() {
-        const query = this.inputBusqueda.value;
-        const records = await recordService.listRecords(query);
         const user = authService.getCurrentUser();
         if (!user) return;
+
+        const query = this.inputBusqueda.value;
+        const records = await recordService.listRecords(query);
 
         this.tablaExpedientesBody.innerHTML = '';
 
@@ -292,12 +285,14 @@ class AppController {
      * @param {string} code
      */
     async _handleDeleteRecord(code) {
-        if (confirm(`¿Confirma que desea eliminar el expediente '${code}' y sus archivos adjuntos?`)) {
-            try {
-                await recordService.deleteRecord(code);
-            } catch (error) {
-                this._showToast(error.message, 'error');
-            }
+        if (!confirm(`¿Confirma que desea eliminar el expediente '${code}' y sus archivos adjuntos?`)) {
+            return;
+        }
+
+        try {
+            await recordService.deleteRecord(code);
+        } catch (error) {
+            this._showToast(error.message, 'error');
         }
     }
 
@@ -413,12 +408,14 @@ class AppController {
      * @param {string} documentId
      */
     async _handleDeleteDocument(documentId) {
-        if (confirm('¿Desea eliminar este documento digital del repositorio Cloud?')) {
-            try {
-                await recordService.deleteDocument(this.currentActiveRecordCode, documentId);
-            } catch (error) {
-                this._showToast(error.message, 'error');
-            }
+        if (!confirm('¿Desea eliminar este documento digital del repositorio Cloud?')) {
+            return;
+        }
+
+        try {
+            await recordService.deleteDocument(this.currentActiveRecordCode, documentId);
+        } catch (error) {
+            this._showToast(error.message, 'error');
         }
     }
 
@@ -434,9 +431,8 @@ class AppController {
         this.toastContainer.appendChild(toast);
 
         setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
+            if (!toast.parentNode) return;
+            toast.parentNode.removeChild(toast);
         }, 4000);
     }
 
