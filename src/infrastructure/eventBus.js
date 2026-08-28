@@ -33,9 +33,8 @@ export class EventBus {
      * @param {Function} callback
      */
     unsubscribe(event, callback) {
-        if (this._listeners.has(event)) {
-            this._listeners.get(event).delete(callback);
-        }
+        if (!this._listeners.has(event)) return;
+        this._listeners.get(event).delete(callback);
     }
 
     /**
@@ -44,15 +43,15 @@ export class EventBus {
      * @param {*} [payload] - Data dispatched to listeners.
      */
     publish(event, payload = null) {
-        if (this._listeners.has(event)) {
-            this._listeners.get(event).forEach(callback => {
-                try {
-                    callback(payload);
-                } catch (error) {
-                    console.error(`[EventBus] Error dispatching event '${event}':`, error);
-                }
-            });
-        }
+        if (!this._listeners.has(event)) return;
+
+        this._listeners.get(event).forEach(callback => {
+            try {
+                callback(payload);
+            } catch (error) {
+                console.error(`[EventBus] Error dispatching event '${event}':`, error);
+            }
+        });
     }
 }
 

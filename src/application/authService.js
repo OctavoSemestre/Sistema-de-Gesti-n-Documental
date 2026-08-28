@@ -15,13 +15,13 @@ export class AuthService {
      */
     _loadSession() {
         const raw = sessionStorage.getItem(SESSION_KEY);
-        if (raw) {
-            try {
-                const data = JSON.parse(raw);
-                this._currentUser = new User(data);
-            } catch (e) {
-                sessionStorage.removeItem(SESSION_KEY);
-            }
+        if (!raw) return;
+
+        try {
+            const data = JSON.parse(raw);
+            this._currentUser = new User(data);
+        } catch (e) {
+            sessionStorage.removeItem(SESSION_KEY);
         }
     }
 
