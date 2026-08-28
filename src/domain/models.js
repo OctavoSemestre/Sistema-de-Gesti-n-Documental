@@ -1,9 +1,15 @@
-/**
- * Domain Models, Aggregates, and Factories
- */
 import { RoleStrategyResolver } from './roles.js';
 
 export class DocumentFile {
+    /**
+     * @param {Object} params
+     * @param {string} [params.id]
+     * @param {string} params.name
+     * @param {string} [params.mimeType]
+     * @param {number} [params.sizeBytes]
+     * @param {string|Date} [params.uploadDate]
+     * @param {string} [params.storageUrl]
+     */
     constructor({ id, name, mimeType, sizeBytes, uploadDate, storageUrl }) {
         this.id = id || `DOC-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
         this.name = name;
@@ -34,12 +40,27 @@ export class DocumentFile {
         };
     }
 
+    /**
+     * @param {Object} data
+     * @returns {DocumentFile}
+     */
     static fromJSON(data) {
         return new DocumentFile(data);
     }
 }
 
 export class RecordArchive {
+    /**
+     * @param {Object} params
+     * @param {string} params.code
+     * @param {string} params.series
+     * @param {string} params.subseries
+     * @param {string} [params.location]
+     * @param {string|Date} params.startDate
+     * @param {string|Date|null} [params.endDate]
+     * @param {string} [params.observations]
+     * @param {Array<DocumentFile|Object>} [params.documents]
+     */
     constructor({ code, series, subseries, location, startDate, endDate, observations, documents = [] }) {
         this.code = code?.trim();
         this.series = series?.trim();
@@ -51,6 +72,10 @@ export class RecordArchive {
         this.documents = documents.map(doc => doc instanceof DocumentFile ? doc : DocumentFile.fromJSON(doc));
     }
 
+    /**
+     * Validates domain invariants and retention schedule temporal consistency.
+     * @throws {Error} If mandatory fields are missing or temporal sequence is invalid.
+     */
     validate() {
         if (!this.code) throw new Error('Record code is mandatory.');
         if (!this.series) throw new Error('Record series is mandatory.');
@@ -61,6 +86,9 @@ export class RecordArchive {
         }
     }
 
+    /**
+     * @param {DocumentFile} document
+     */
     addDocument(document) {
         if (!(document instanceof DocumentFile)) {
             throw new Error('Invalid document instance.');
@@ -68,10 +96,17 @@ export class RecordArchive {
         this.documents.push(document);
     }
 
+    /**
+     * @param {string} documentId
+     */
     removeDocument(documentId) {
         this.documents = this.documents.filter(doc => doc.id !== documentId);
     }
 
+    /**
+     * @param {string} documentId
+     * @returns {DocumentFile|undefined}
+     */
     getDocument(documentId) {
         return this.documents.find(doc => doc.id === documentId);
     }
@@ -97,12 +132,23 @@ export class RecordArchive {
         };
     }
 
+    /**
+     * @param {Object} data
+     * @returns {RecordArchive}
+     */
     static fromJSON(data) {
         return new RecordArchive(data);
     }
 }
 
 export class User {
+    /**
+     * @param {Object} params
+     * @param {string} [params.id]
+     * @param {string} params.email
+     * @param {string} params.role
+     * @param {string} [params.name]
+     */
     constructor({ id, email, role, name }) {
         this.id = id || `USR-${Date.now()}`;
         this.email = email;
@@ -111,6 +157,11 @@ export class User {
         this._strategy = RoleStrategyResolver.getStrategy(this.role);
     }
 
+    /**
+     * Checks permission via Strategy pattern.
+     * @param {string} permission
+     * @returns {boolean}
+     */
     can(permission) {
         return this._strategy.hasPermission(permission);
     }
@@ -125,16 +176,27 @@ export class User {
     }
 }
 
-/**
- * Factory Method for domain instantiation
- */
 export class RecordFactory {
+    /**
+     * Factory method creating and validating a RecordArchive aggregate root.
+     * @param {Object} dto - Raw record data transfer object.
+     * @returns {RecordArchive} Validated domain entity.
+     */
     static createRecord(dto) {
         const record = new RecordArchive(dto);
         record.validate();
         return record;
     }
 
+    /**
+     * Factory method constructing a validated DocumentFile entity.
+     * @param {Object} params
+     * @param {string} params.name
+     * @param {string} [params.mimeType]
+     * @param {number} [params.sizeBytes]
+     * @param {string} [params.storageUrl]
+     * @returns {DocumentFile}
+     */
     static createDocument({ name, mimeType, sizeBytes, storageUrl }) {
         if (!name) throw new Error('File name is mandatory.');
         return new DocumentFile({ name, mimeType, sizeBytes, storageUrl });

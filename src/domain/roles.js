@@ -1,7 +1,3 @@
-/**
- * Domain Role & Permission Enumerations and Strategy Implementations (RBAC)
- */
-
 export const Role = Object.freeze({
     ADMINISTRATOR: 'Administrador',
     OFFICER: 'Funcionario',
@@ -19,14 +15,18 @@ export const Permission = Object.freeze({
     MANAGE_USERS: 'MANAGE_USERS'
 });
 
-/**
- * Base strategy for role authorization
- */
 export class RoleStrategy {
+    /**
+     * @returns {string[]}
+     */
     getPermissions() {
         return [];
     }
 
+    /**
+     * @param {string} permission
+     * @returns {boolean}
+     */
     hasPermission(permission) {
         return this.getPermissions().includes(permission);
     }
@@ -69,6 +69,11 @@ export class TechnicianStrategy extends RoleStrategy {
 }
 
 export class RoleStrategyResolver {
+    /**
+     * Resolves the concrete RBAC authorization strategy for a given user role.
+     * @param {string} role - The role name to resolve.
+     * @returns {RoleStrategy} Concrete role strategy instance.
+     */
     static getStrategy(role) {
         switch (role) {
             case Role.ADMINISTRATOR:
