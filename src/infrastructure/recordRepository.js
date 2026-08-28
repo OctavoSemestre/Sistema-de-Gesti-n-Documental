@@ -1,6 +1,3 @@
-/**
- * Repository Pattern with Cache-Aside Strategy
- */
 import { RecordArchive, DocumentFile } from '../domain/models.js';
 
 const STORAGE_KEY = 'samana_expedientes_db_v1';
@@ -19,6 +16,10 @@ export class LocalStorageRecordRepository extends IRecordRepository {
         this._isInitialized = false;
     }
 
+    /**
+     * Initializes repository using Cache-Aside strategy, seeding baseline data on first launch.
+     * @private
+     */
     async _ensureInitialized() {
         if (this._isInitialized) return;
 
@@ -41,6 +42,9 @@ export class LocalStorageRecordRepository extends IRecordRepository {
         this._isInitialized = true;
     }
 
+    /**
+     * @private
+     */
     _seedInitialData() {
         this._cache.clear();
 
@@ -80,21 +84,35 @@ export class LocalStorageRecordRepository extends IRecordRepository {
         this._persist();
     }
 
+    /**
+     * @private
+     */
     _persist() {
         const recordsArray = Array.from(this._cache.values()).map(r => r.toJSON());
         localStorage.setItem(STORAGE_KEY, JSON.stringify(recordsArray));
     }
 
+    /**
+     * @returns {Promise<RecordArchive[]>}
+     */
     async getAll() {
         await this._ensureInitialized();
         return Array.from(this._cache.values());
     }
 
+    /**
+     * @param {string} code
+     * @returns {Promise<RecordArchive|null>}
+     */
     async getByCode(code) {
         await this._ensureInitialized();
         return this._cache.get(code) || null;
     }
 
+    /**
+     * @param {RecordArchive} record
+     * @returns {Promise<RecordArchive>}
+     */
     async save(record) {
         await this._ensureInitialized();
         if (!(record instanceof RecordArchive)) {
@@ -106,6 +124,10 @@ export class LocalStorageRecordRepository extends IRecordRepository {
         return record;
     }
 
+    /**
+     * @param {string} code
+     * @returns {Promise<void>}
+     */
     async delete(code) {
         await this._ensureInitialized();
         if (!this._cache.has(code)) {

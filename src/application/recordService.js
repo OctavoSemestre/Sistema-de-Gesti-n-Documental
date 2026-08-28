@@ -1,19 +1,25 @@
-/**
- * Record and Document Management Application Service (Use Cases)
- */
-import { RecordFactory } from '../domain/models.js';
+import { RecordFactory, RecordArchive, DocumentFile } from '../domain/models.js';
 import { Permission } from '../domain/roles.js';
-import { LocalStorageRecordRepository } from '../infrastructure/recordRepository.js';
-import { CloudStorageAdapter } from '../infrastructure/storageAdapter.js';
+import { LocalStorageRecordRepository, IRecordRepository } from '../infrastructure/recordRepository.js';
+import { CloudStorageAdapter, IStorageService } from '../infrastructure/storageAdapter.js';
 import { globalEventBus, SystemEvents } from '../infrastructure/eventBus.js';
 import { authService } from './authService.js';
 
 export class RecordService {
+    /**
+     * @param {IRecordRepository} [repository]
+     * @param {IStorageService} [storage]
+     */
     constructor(repository = new LocalStorageRecordRepository(), storage = new CloudStorageAdapter()) {
         this._repository = repository;
         this._storage = storage;
     }
 
+    /**
+     * Retrieves records filtered by multi-criteria search query.
+     * @param {string} [searchQuery] - Search filter string.
+     * @returns {Promise<RecordArchive[]>}
+     */
     async listRecords(searchQuery = '') {
         const records = await this._repository.getAll();
         if (!searchQuery || !searchQuery.trim()) {
@@ -30,6 +36,10 @@ export class RecordService {
         );
     }
 
+    /**
+     * @param {string} code
+     * @returns {Promise<RecordArchive>}
+     */
     async getRecord(code) {
         const record = await this._repository.getByCode(code);
         if (!record) {
@@ -38,10 +48,14 @@ export class RecordService {
         return record;
     }
 
+    /**
+     * Creates and persists a new record after validating TRD invariants and RBAC permissions.
+     * @param {Object} dto - Raw record creation data.
+     * @returns {Promise<RecordArchive>}
+     */
     async createRecord(dto) {
         authService.assertPermission(Permission.CREATE_RECORD);
 
-        // Check if code already exists
         const existing = await this._repository.getByCode(dto.code);
         if (existing) {
             throw new Error(`A record with code '${dto.code}' already exists.`);
@@ -58,12 +72,17 @@ export class RecordService {
         return newRecord;
     }
 
+    /**
+     * Updates an existing record's metadata.
+     * @param {string} code
+     * @param {Object} dto
+     * @returns {Promise<RecordArchive>}
+     */
     async updateRecord(code, dto) {
         authService.assertPermission(Permission.EDIT_RECORD);
 
         const record = await this.getRecord(code);
 
-        // Apply domain updates
         record.series = dto.series?.trim() || record.series;
         record.subseries = dto.subseries?.trim() || record.subseries;
         record.location = dto.location?.trim() || record.location;
@@ -82,6 +101,11 @@ export class RecordService {
         return record;
     }
 
+    /**
+     * Removes a record from persistence.
+     * @param {string} code
+     * @returns {Promise<void>}
+     */
     async deleteRecord(code) {
         authService.assertPermission(Permission.DELETE_RECORD);
 
@@ -95,6 +119,12 @@ export class RecordService {
         });
     }
 
+    /**
+     * Uploads and attaches a PDF document to a record aggregate.
+     * @param {string} recordCode
+     * @param {File} file - PDF document binary.
+     * @returns {Promise<DocumentFile>}
+     */
     async attachDocument(recordCode, file) {
         authService.assertPermission(Permission.UPLOAD_DOCUMENT);
 
@@ -104,8 +134,6 @@ export class RecordService {
         }
 
         const record = await this.getRecord(recordCode);
-
-        // Upload through cloud storage adapter
         const uploadResult = await this._storage.upload(file);
 
         const docEntity = RecordFactory.createDocument({
@@ -126,6 +154,11 @@ export class RecordService {
         return docEntity;
     }
 
+    /**
+     * @param {string} recordCode
+     * @param {string} documentId
+     * @returns {Promise<void>}
+     */
     async deleteDocument(recordCode, documentId) {
         authService.assertPermission(Permission.DELETE_DOCUMENT);
 
@@ -145,6 +178,10 @@ export class RecordService {
         });
     }
 
+    /**
+     * @param {string} storageUrl
+     * @returns {Promise<string>}
+     */
     async getDownloadUrl(storageUrl) {
         return await this._storage.getDownloadUrl(storageUrl);
     }
