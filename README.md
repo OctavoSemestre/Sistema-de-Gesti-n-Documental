@@ -1,6 +1,6 @@
 # Sistema de Gestión Documental - Alcaldía Municipal de Samaná
 
-Prototipo de software arquitectónico para la digitalización, custodia y administración del acervo documental municipal, desarrollado bajo principios de **Domain-Driven Design (DDD)**, **Clean Architecture**, **SOLID**, **DRY** y patrones de diseño para computación en la nube.
+Prototipo de software arquitectónico para la digitalización, custodia y administración del acervo documental municipal, desarrollado bajo principios de **Domain-Driven Design (DDD)**, **Clean Architecture**, **SOLID**, **DRY**, **Guard Clauses (Early Return)** y patrones de diseño para computación en la nube.
 
 > **Acceso a la Aplicación en la Nube (GitHub Pages):**  
 > 🔗 [https://octavosemestre.github.io/Sistema-de-Gesti-n-Documental/](https://octavosemestre.github.io/Sistema-de-Gesti-n-Documental/)
@@ -83,11 +83,11 @@ Sistema-de-Gesti-n-Documental/
     └── app.js                   # CAPA 4: PRESENTACIÓN (Controlador reactivo y binding UI)
 ```
 
-### Justificación de Buenas Prácticas:
+### Principios y Estándares de Ingeniería Aplicados:
 1. **Separación de Intereses (*Separation of Concerns*)**: Los recursos estáticos (`assets/`) y el código fuente (`src/`) están aislados, facilitando el mantenimiento y rediseño visual sin alterar la lógica de negocio.
 2. **Independencia Tecnológica**: La capa de dominio (`src/domain/`) no tiene dependencias externas ni de frameworks; puede reutilizarse en backend o migrarse a TypeScript sin fricción.
-3. **Estandarización Enterprise**: La convención `src/` y `assets/` es el estándar global en frameworks e industrias de desarrollo de software.
-4. **Documentación JSDoc en Inglés**: Todo el código fuente no trivial está formalmente documentado bajo el estándar JSDoc en inglés técnico (`@param`, `@returns`, `@throws`).
+3. **Cláusulas de Guarda (*Guard Clauses / Early Returns*)**: Se erradicó la anidación excesiva de condicionales `if/else`, simplificando la complejidad ciclomática y garantizando validaciones defensivas al inicio de cada método.
+4. **Documentación JSDoc en Inglés**: Todo el código fuente no trivial está formalmente tipado y documentado bajo el estándar JSDoc en inglés técnico (`@param`, `@returns`, `@throws`).
 
 ---
 
