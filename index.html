@@ -37,7 +37,7 @@
                         <option value="Técnico">Técnico (Solo Lectura y Descarga)</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">🔐 Iniciar Sesión</button>
+                <button type="submit" class="btn btn-primary btn-full">Iniciar Sesión</button>
             </form>
         </div>
     </div>
@@ -54,7 +54,7 @@
             </div>
             <div class="user-badge-container">
                 <span id="usuario-info" class="user-tag"></span>
-                <button id="btn-salir" class="btn btn-danger btn-sm">🚪 Cerrar Sesión</button>
+                <button id="btn-salir" class="btn btn-danger btn-sm">Cerrar Sesión</button>
             </div>
         </header>
 
@@ -63,17 +63,17 @@
             <section id="seccion-consulta" class="card">
                 <div class="header-flex">
                     <div>
-                        <h2>📁 Expedientes Registrados</h2>
+                        <h2>Expedientes Registrados</h2>
                         <p class="subtitle-small">Catálogo institucional de retención documental (TRD)</p>
                     </div>
                     <div class="action-buttons-header">
-                        <button id="btn-registrar-usuario" class="btn btn-secondary action-admin hidden">👥 + Nuevo Usuario</button>
-                        <button id="btn-nuevo-exp" class="btn btn-primary action-write">📁 + Nuevo Expediente</button>
+                        <button id="btn-registrar-usuario" class="btn btn-secondary action-admin hidden">+ Nuevo Usuario</button>
+                        <button id="btn-nuevo-exp" class="btn btn-primary action-write">+ Nuevo Expediente</button>
                     </div>
                 </div>
 
                 <div class="form-group search-box">
-                    <input type="text" id="input-busqueda-exp" placeholder="🔍 Buscar expediente por código, serie, subserie o ubicación..." aria-label="Buscar expediente">
+                    <input type="text" id="input-busqueda-exp" placeholder="Buscar expediente por código, serie, subserie o ubicación..." aria-label="Buscar expediente">
                 </div>
 
                 <div class="table-responsive">
@@ -98,7 +98,7 @@
             <!-- PANTALLA 3: CREAR Y EDITAR EXPEDIENTE -->
             <section id="seccion-crear" class="card hidden">
                 <div class="form-header-card">
-                    <h2 id="titulo-form-exp">📁 Registrar Nuevo Expediente</h2>
+                    <h2 id="titulo-form-exp">Registrar Nuevo Expediente</h2>
                     <p class="subtitle-small">Diligencie los campos requeridos según las directrices de la TRD municipal.</p>
                 </div>
                 <hr class="divider">
@@ -139,8 +139,8 @@
                         <textarea id="exp-observations" rows="3" placeholder="Anotaciones adicionales o antecedentes del expediente..."></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">💾 Guardar Expediente</button>
-                        <button type="button" id="btn-cancelar-crear" class="btn btn-secondary">✕ Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Expediente</button>
+                        <button type="button" id="btn-cancelar-crear" class="btn btn-secondary">Cancelar</button>
                     </div>
                 </form>
             </section>
@@ -149,7 +149,7 @@
             <section id="seccion-documentos" class="card hidden">
                 <div class="header-flex">
                     <div>
-                        <h2 id="doc-exp-code-title">📁 Expediente: -</h2>
+                        <h2 id="doc-exp-code-title">Expediente: -</h2>
                         <p id="doc-exp-details-subtitle" class="subtitle-dark">Serie: - | Subserie: -</p>
                     </div>
                     <button type="button" id="btn-volver-lista" class="btn btn-secondary">← Volver a Expedientes</button>
@@ -157,14 +157,14 @@
                 <hr class="divider">
 
                 <div class="form-group action-write upload-panel" id="zona-carga">
-                    <label for="input-archivo-doc"><strong>📎 Adjuntar Documento Digital (PDF) a la Bóveda Cloud:</strong></label>
+                    <label for="input-archivo-doc"><strong>Adjuntar Documento Digital (PDF) a la Bóveda Cloud:</strong></label>
                     <div class="upload-control-group">
                         <input type="file" id="input-archivo-doc" accept=".pdf,application/pdf">
-                        <button type="button" id="btn-asociar-doc" class="btn btn-primary">☁️ Cargar a la Nube (S3 Vault)</button>
+                        <button type="button" id="btn-asociar-doc" class="btn btn-primary">Cargar a la Nube (S3 Vault)</button>
                     </div>
                 </div>
 
-                <h3>📄 Documentos Digitales Asociados</h3>
+                <h3>Documentos Digitales Asociados</h3>
                 <div class="table-responsive">
                     <table class="table-styled">
                         <thead>
