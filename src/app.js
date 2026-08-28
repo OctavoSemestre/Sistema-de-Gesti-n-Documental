@@ -122,7 +122,7 @@ class AppController {
 
         this.pantallaLogin.classList.add('hidden');
         this.appMain.classList.remove('hidden');
-        this.usuarioInfo.innerText = `${user.name} (${user.role})`;
+        this.usuarioInfo.innerHTML = `👤 Rol: <strong>${this._escapeHtml(user.role)}</strong>`;
 
         // Apply RBAC UI visibility
         const canWrite = user.can(Permission.CREATE_RECORD);
@@ -158,7 +158,7 @@ class AppController {
         this.seccionCrear.classList.remove('hidden');
 
         if (recordToEdit) {
-            this.tituloFormExp.innerText = `Modificar Expediente: ${recordToEdit.code}`;
+            this.tituloFormExp.innerText = `✏️ Modificar Expediente: ${recordToEdit.code}`;
             this.expIsEdit.value = recordToEdit.code;
             this.expCode.value = recordToEdit.code;
             this.expCode.disabled = true;
@@ -169,7 +169,7 @@ class AppController {
             this.expEndDate.value = recordToEdit.formattedEndDate;
             this.expObservations.value = recordToEdit.observations || '';
         } else {
-            this.tituloFormExp.innerText = 'Registrar Nuevo Expediente';
+            this.tituloFormExp.innerText = '📁 Registrar Nuevo Expediente';
             this.expIsEdit.value = '0';
             this.expCode.value = '';
             this.expCode.disabled = false;
@@ -228,22 +228,28 @@ class AppController {
         records.forEach(rec => {
             const tr = document.createElement('tr');
 
-            // Location Badge Class
+            // Location Badge Class & Icon
             let badgeClass = 'badge-gestion';
-            if (rec.location.includes('Central')) badgeClass = 'badge-central';
-            if (rec.location.includes('Histórico')) badgeClass = 'badge-historico';
+            let locationIcon = '📁';
+            if (rec.location.includes('Central')) {
+                badgeClass = 'badge-central';
+                locationIcon = '🏛️';
+            } else if (rec.location.includes('Histórico')) {
+                badgeClass = 'badge-historico';
+                locationIcon = '📜';
+            }
 
             tr.innerHTML = `
                 <td><strong>${this._escapeHtml(rec.code)}</strong></td>
                 <td>${this._escapeHtml(rec.series)}</td>
                 <td>${this._escapeHtml(rec.subseries)}</td>
-                <td><span class="badge ${badgeClass}">${this._escapeHtml(rec.location)}</span></td>
-                <td><span class="badge-doc-count">${rec.documents.length} doc(s)</span></td>
+                <td><span class="badge ${badgeClass}">${locationIcon} ${this._escapeHtml(rec.location)}</span></td>
+                <td><span class="badge-doc-count">📎 ${rec.documents.length} doc(s)</span></td>
                 <td>
                     <div class="table-actions">
-                        <button class="btn btn-sm btn-docs" data-code="${rec.code}">Documentos</button>
-                        ${user.can(Permission.EDIT_RECORD) ? `<button class="btn btn-sm btn-secondary btn-edit" data-code="${rec.code}">Editar</button>` : ''}
-                        ${user.can(Permission.DELETE_RECORD) ? `<button class="btn btn-sm btn-danger btn-del" data-code="${rec.code}">Eliminar</button>` : ''}
+                        <button class="btn btn-sm btn-docs" data-code="${rec.code}">📄 Documentos</button>
+                        ${user.can(Permission.EDIT_RECORD) ? `<button class="btn btn-sm btn-secondary btn-edit" data-code="${rec.code}">✏️ Editar</button>` : ''}
+                        ${user.can(Permission.DELETE_RECORD) ? `<button class="btn btn-sm btn-danger btn-del" data-code="${rec.code}">🗑️ Eliminar</button>` : ''}
                     </div>
                 </td>
             `;
@@ -289,7 +295,7 @@ class AppController {
             const record = await recordService.getRecord(this.currentActiveRecordCode);
             const user = authService.getCurrentUser();
 
-            this.docExpCodeTitle.innerText = `Expediente: ${record.code}`;
+            this.docExpCodeTitle.innerText = `📁 Expediente: ${record.code}`;
             this.docExpDetailsSubtitle.innerText = `Serie: ${record.series} | Subserie: ${record.subseries} | Ubicación: ${record.location}`;
             this.tablaDocumentosBody.innerHTML = '';
 
@@ -305,14 +311,14 @@ class AppController {
             record.documents.forEach(doc => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${this._escapeHtml(doc.name)}</strong></td>
+                    <td><strong>📄 ${this._escapeHtml(doc.name)}</strong></td>
                     <td>${doc.formattedSize}</td>
                     <td>${doc.formattedDate}</td>
-                    <td><span class="cloud-tag">${doc.storageUrl ? 'S3: ' + doc.storageUrl.split('/').pop() : 'Cloud Vault'}</span></td>
+                    <td><span class="cloud-tag">☁️ ${doc.storageUrl ? 'S3: ' + doc.storageUrl.split('/').pop() : 'Cloud Vault'}</span></td>
                     <td>
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-download" data-id="${doc.id}">Descargar</button>
-                            ${user.can(Permission.DELETE_DOCUMENT) ? `<button class="btn btn-sm btn-danger btn-doc-del" data-id="${doc.id}">Eliminar</button>` : ''}
+                            <button class="btn btn-sm btn-download" data-id="${doc.id}">⬇️ Descargar</button>
+                            ${user.can(Permission.DELETE_DOCUMENT) ? `<button class="btn btn-sm btn-danger btn-doc-del" data-id="${doc.id}">🗑️ Eliminar</button>` : ''}
                         </div>
                     </td>
                 `;
