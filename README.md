@@ -134,18 +134,18 @@ La plataforma implementa un modelo de **Control de Acceso Basado en Roles (RBAC)
 ### 6.1 Diagrama de Casos de Uso
 ```mermaid
 flowchart LR
-    Admin((Administrador))
-    Func((Funcionario))
-    Tec((Técnico))
+    Admin(["Administrador"])
+    Func(["Funcionario"])
+    Tec(["Técnico"])
 
-    subgraph Sistema de Gestión Documental
-        CU1[CU-01: Autenticación]
-        CU2[CU-02: Consulta y Filtros]
-        CU3[CU-03: Crear / Editar Expediente]
-        CU4[CU-04: Eliminar Expediente]
-        CU5[CU-05: Cargar Documento Cloud]
-        CU6[CU-06: Descargar Documento]
-        CU7[CU-07: Gestión de Usuarios]
+    subgraph SGD["Sistema de Gestión Documental"]
+        CU1["CU-01: Autenticación"]
+        CU2["CU-02: Consulta y Filtros"]
+        CU3["CU-03: Crear / Editar Expediente"]
+        CU4["CU-04: Eliminar Expediente"]
+        CU5["CU-05: Cargar Documento Cloud"]
+        CU6["CU-06: Descargar Documento"]
+        CU7["CU-07: Gestión de Usuarios"]
     end
 
     Tec --> CU1
@@ -170,22 +170,22 @@ flowchart LR
 ### 6.2 Diagrama de Despliegue en la Nube
 ```mermaid
 flowchart TB
-    subgraph Client Tier
-        Browser["Navegador Web (SPA Vanilla JS ES6)"]
+    subgraph ClientTier["Client Tier"]
+        Browser["Navegador Web - SPA Vanilla JS ES6"]
     end
 
-    subgraph Cloud Edge Tier
+    subgraph CloudEdge["Cloud Edge Tier"]
         CDN["GitHub Pages CDN / Fastly Edge Network"]
-        StaticBucket["Static Web Hosting (HTML/CSS/JS Modules)"]
+        StaticBucket["Static Web Hosting - assets y src"]
     end
 
-    subgraph Cloud Storage Tier
-        S3Docs[("Amazon S3 Simulated Vault (s3://samana-document-vault-prod)")]
+    subgraph CloudStorage["Cloud Storage Tier"]
+        S3Docs[("Amazon S3 Simulated Vault")]
         LocalStore[("Encrypted Local Repository / Cache-Aside")]
     end
 
-    Browser -->|HTTPS GET (Edge)| CDN
+    Browser -->|"HTTPS GET (Edge)"| CDN
     CDN --> StaticBucket
-    Browser -->|IStorageService Adapter| S3Docs
-    Browser -->|IRecordRepository| LocalStore
+    Browser -->|"IStorageService Adapter"| S3Docs
+    Browser -->|"IRecordRepository"| LocalStore
 ```
