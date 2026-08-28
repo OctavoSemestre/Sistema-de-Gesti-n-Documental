@@ -1,10 +1,7 @@
-/**
- * Main Presentation Controller / UI Orchestrator
- */
 import { authService } from './application/authService.js';
 import { recordService } from './application/recordService.js';
 import { globalEventBus, SystemEvents } from './infrastructure/eventBus.js';
-import { Permission, Role } from './domain/roles.js';
+import { Permission } from './domain/roles.js';
 
 class AppController {
     constructor() {
@@ -14,8 +11,10 @@ class AppController {
         this._subscribeSystemEvents();
     }
 
+    /**
+     * @private
+     */
     _cacheElements() {
-        // Screens & Containers
         this.pantallaLogin = document.getElementById('pantalla-login');
         this.appMain = document.getElementById('app-main');
         this.seccionConsulta = document.getElementById('seccion-consulta');
@@ -23,7 +22,6 @@ class AppController {
         this.seccionDocumentos = document.getElementById('seccion-documentos');
         this.toastContainer = document.getElementById('toast-container');
 
-        // Auth & Header
         this.formLogin = document.getElementById('form-login');
         this.loginEmail = document.getElementById('login-email');
         this.loginPassword = document.getElementById('login-password');
@@ -31,13 +29,11 @@ class AppController {
         this.usuarioInfo = document.getElementById('usuario-info');
         this.btnSalir = document.getElementById('btn-salir');
 
-        // Records & Search
         this.btnNuevoExp = document.getElementById('btn-nuevo-exp');
         this.btnRegistrarUsuario = document.getElementById('btn-registrar-usuario');
         this.inputBusqueda = document.getElementById('input-busqueda-exp');
         this.tablaExpedientesBody = document.getElementById('tabla-expedientes-body');
 
-        // Record Form
         this.formCrearExp = document.getElementById('form-crear-exp');
         this.tituloFormExp = document.getElementById('titulo-form-exp');
         this.expIsEdit = document.getElementById('exp-is-edit');
@@ -50,7 +46,6 @@ class AppController {
         this.expObservations = document.getElementById('exp-observations');
         this.btnCancelarCrear = document.getElementById('btn-cancelar-crear');
 
-        // Document Management
         this.docExpCodeTitle = document.getElementById('doc-exp-code-title');
         this.docExpDetailsSubtitle = document.getElementById('doc-exp-details-subtitle');
         this.inputArchivoDoc = document.getElementById('input-archivo-doc');
@@ -60,6 +55,9 @@ class AppController {
         this.zonaCarga = document.getElementById('zona-carga');
     }
 
+    /**
+     * @private
+     */
     _bindEvents() {
         this.formLogin.addEventListener('submit', (e) => this._handleLogin(e));
         this.btnSalir.addEventListener('click', () => authService.logout());
@@ -80,6 +78,9 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     */
     _subscribeSystemEvents() {
         globalEventBus.subscribe(SystemEvents.AUTH_STATE_CHANGED, (user) => this._handleAuthStateChanged(user));
         globalEventBus.subscribe(SystemEvents.RECORD_CREATED, () => this._renderRecordsList());
@@ -100,6 +101,10 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     * @param {Event} e
+     */
     _handleLogin(e) {
         e.preventDefault();
         try {
@@ -112,6 +117,11 @@ class AppController {
         }
     }
 
+    /**
+     * Updates view layout and toggles RBAC-restricted action controls based on authenticated role.
+     * @private
+     * @param {Object|null} user - Active authenticated domain user.
+     */
     _handleAuthStateChanged(user) {
         if (!user) {
             this.appMain.classList.add('hidden');
@@ -124,7 +134,6 @@ class AppController {
         this.appMain.classList.remove('hidden');
         this.usuarioInfo.innerHTML = `👤 Rol: <strong>${this._escapeHtml(user.role)}</strong>`;
 
-        // Apply RBAC UI visibility
         const canWrite = user.can(Permission.CREATE_RECORD);
         const canAdmin = user.can(Permission.MANAGE_USERS);
 
@@ -146,12 +155,19 @@ class AppController {
         this._renderRecordsList();
     }
 
+    /**
+     * @private
+     */
     _showListView() {
         this.seccionCrear.classList.add('hidden');
         this.seccionDocumentos.classList.add('hidden');
         this.seccionConsulta.classList.remove('hidden');
     }
 
+    /**
+     * @private
+     * @param {Object|null} [recordToEdit]
+     */
     _showCreateForm(recordToEdit = null) {
         this.seccionConsulta.classList.add('hidden');
         this.seccionDocumentos.classList.add('hidden');
@@ -182,6 +198,10 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     * @param {Event} e
+     */
     async _handleSaveRecord(e) {
         e.preventDefault();
         try {
@@ -208,6 +228,10 @@ class AppController {
         }
     }
 
+    /**
+     * Renders reactive records table dynamically applying RBAC permission checks for action buttons.
+     * @private
+     */
     async _renderRecordsList() {
         const query = this.inputBusqueda.value;
         const records = await recordService.listRecords(query);
@@ -228,7 +252,6 @@ class AppController {
         records.forEach(rec => {
             const tr = document.createElement('tr');
 
-            // Location Badge Class
             let badgeClass = 'badge-gestion';
             if (rec.location.includes('Central')) badgeClass = 'badge-central';
             if (rec.location.includes('Histórico')) badgeClass = 'badge-historico';
@@ -264,6 +287,10 @@ class AppController {
         });
     }
 
+    /**
+     * @private
+     * @param {string} code
+     */
     async _handleDeleteRecord(code) {
         if (confirm(`¿Confirma que desea eliminar el expediente '${code}' y sus archivos adjuntos?`)) {
             try {
@@ -274,6 +301,10 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     * @param {string} recordCode
+     */
     async _openDocumentsView(recordCode) {
         this.currentActiveRecordCode = recordCode;
         this.seccionConsulta.classList.add('hidden');
@@ -282,6 +313,9 @@ class AppController {
         this._refreshDocumentsView();
     }
 
+    /**
+     * @private
+     */
     async _refreshDocumentsView() {
         if (!this.currentActiveRecordCode) return;
 
@@ -332,6 +366,9 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     */
     async _handleUploadDocument() {
         const file = this.inputArchivoDoc.files[0];
         if (!file) {
@@ -352,6 +389,10 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     * @param {Object} doc
+     */
     async _handleDownloadDocument(doc) {
         try {
             const url = await recordService.getDownloadUrl(doc.storageUrl);
@@ -367,6 +408,10 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     * @param {string} documentId
+     */
     async _handleDeleteDocument(documentId) {
         if (confirm('¿Desea eliminar este documento digital del repositorio Cloud?')) {
             try {
@@ -377,6 +422,11 @@ class AppController {
         }
     }
 
+    /**
+     * @private
+     * @param {string} message
+     * @param {string} [type]
+     */
     _showToast(message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast ${type === 'error' ? 'toast-error' : 'toast-success'}`;
@@ -390,6 +440,12 @@ class AppController {
         }, 4000);
     }
 
+    /**
+     * Sanitizes untrusted user input before DOM insertion to prevent XSS.
+     * @private
+     * @param {string} str
+     * @returns {string} Sanitized HTML-safe string.
+     */
     _escapeHtml(str) {
         if (!str) return '';
         return str
@@ -401,7 +457,6 @@ class AppController {
     }
 }
 
-// Bootstrap Application on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     const app = new AppController();
     app.init();

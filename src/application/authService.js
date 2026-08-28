@@ -1,6 +1,3 @@
-/**
- * Authentication and RBAC Application Service
- */
 import { User } from '../domain/models.js';
 import { Role, Permission } from '../domain/roles.js';
 import { globalEventBus, SystemEvents } from '../infrastructure/eventBus.js';
@@ -13,6 +10,9 @@ export class AuthService {
         this._loadSession();
     }
 
+    /**
+     * @private
+     */
     _loadSession() {
         const raw = sessionStorage.getItem(SESSION_KEY);
         if (raw) {
@@ -25,14 +25,27 @@ export class AuthService {
         }
     }
 
+    /**
+     * @returns {User|null}
+     */
     getCurrentUser() {
         return this._currentUser;
     }
 
+    /**
+     * @returns {boolean}
+     */
     isAuthenticated() {
         return this._currentUser !== null;
     }
 
+    /**
+     * Authenticates credentials and stores active session in session storage.
+     * @param {string} email
+     * @param {string} password
+     * @param {string} role
+     * @returns {User}
+     */
     login(email, password, role) {
         if (!email || !password) {
             throw new Error('Email and password are required.');
@@ -56,6 +69,11 @@ export class AuthService {
         globalEventBus.publish(SystemEvents.AUTH_STATE_CHANGED, null);
     }
 
+    /**
+     * Asserts that current authenticated user possesses the required permission.
+     * @param {string} permission - Permission enum constant.
+     * @throws {Error} When unauthenticated or lacking authorization.
+     */
     assertPermission(permission) {
         if (!this._currentUser) {
             throw new Error('Authentication required: No active session.');
