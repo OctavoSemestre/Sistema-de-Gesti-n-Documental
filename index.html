@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema de Gestión Documental - Alcaldía Municipal de Samaná</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
 
@@ -14,16 +15,19 @@
     <!-- PANTALLA 1: LOGIN -->
     <div id="pantalla-login" class="container container-login">
         <div class="card card-login">
-            <h2 class="title-main">Alcaldía de Samaná</h2>
-            <p class="subtitle">Sistema de Gestión Documental y Archivo Digital</p>
+            <div class="brand-header-login">
+                <img src="logo.png" alt="Escudo Alcaldía de Samaná Caldas" class="login-logo">
+                <h2 class="title-main">Alcaldía de Samaná</h2>
+                <p class="subtitle">Sistema de Gestión Documental y Archivo Digital</p>
+            </div>
             <form id="form-login">
                 <div class="form-group text-left">
                     <label for="login-email">Correo electrónico</label>
-                    <input type="email" id="login-email" value="funcionario@samana.gov.co" required>
+                    <input type="email" id="login-email" value="funcionario@samana.gov.co" required autocomplete="username">
                 </div>
                 <div class="form-group text-left">
                     <label for="login-password">Contraseña</label>
-                    <input type="password" id="login-password" value="123456" required>
+                    <input type="password" id="login-password" value="123456" required autocomplete="current-password">
                 </div>
                 <div class="form-group text-left">
                     <label for="login-rol">Perfil de usuario (RBAC)</label>
@@ -33,7 +37,7 @@
                         <option value="Técnico">Técnico (Solo Lectura y Descarga)</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-full">Iniciar Sesión</button>
+                <button type="submit" class="btn btn-primary btn-full">Iniciar Sesión</button>
             </form>
         </div>
     </div>
@@ -41,9 +45,12 @@
     <!-- NAVEGACIÓN Y PANEL PRINCIPAL -->
     <div id="app-main" class="hidden">
         <header>
-            <div>
-                <h3>Alcaldía Municipal de Samaná</h3>
-                <small>Secretaría de Gobierno | Gestión Documental y Archivo Cloud</small>
+            <div class="header-brand">
+                <img src="logo.png" alt="Logo Alcaldía Samaná" class="header-logo">
+                <div class="header-text">
+                    <h3>Alcaldía Municipal de Samaná</h3>
+                    <small>Secretaría de Gobierno | Gestión Documental y Archivo Cloud</small>
+                </div>
             </div>
             <div class="user-badge-container">
                 <span id="usuario-info" class="user-tag"></span>
@@ -57,20 +64,20 @@
                 <div class="header-flex">
                     <div>
                         <h2>Expedientes Registrados</h2>
-                        <p class="subtitle-small">Catálogo institucional de retención documental</p>
+                        <p class="subtitle-small">Catálogo institucional de retención documental (TRD)</p>
                     </div>
                     <div class="action-buttons-header">
                         <button id="btn-registrar-usuario" class="btn btn-secondary action-admin hidden">+ Nuevo Usuario</button>
-                        <button id="btn-nuevo-exp" class="btn action-write">+ Nuevo Expediente</button>
+                        <button id="btn-nuevo-exp" class="btn btn-primary action-write">+ Nuevo Expediente</button>
                     </div>
                 </div>
 
                 <div class="form-group search-box">
-                    <input type="text" id="input-busqueda-exp" placeholder="Buscar expediente por código, serie, subserie o ubicación...">
+                    <input type="text" id="input-busqueda-exp" placeholder="🔍 Buscar expediente por código, serie, subserie o ubicación..." aria-label="Buscar expediente">
                 </div>
 
                 <div class="table-responsive">
-                    <table>
+                    <table class="table-styled">
                         <thead>
                             <tr>
                                 <th>Código</th>
@@ -90,8 +97,10 @@
 
             <!-- PANTALLA 3: CREAR Y EDITAR EXPEDIENTE -->
             <section id="seccion-crear" class="card hidden">
-                <h2 id="titulo-form-exp">Registrar Nuevo Expediente</h2>
-                <p class="subtitle-small">Diligencie los campos requeridos según las directrices de la TRD.</p>
+                <div class="form-header-card">
+                    <h2 id="titulo-form-exp">Registrar Nuevo Expediente</h2>
+                    <p class="subtitle-small">Diligencie los campos requeridos según las directrices de la TRD municipal.</p>
+                </div>
                 <hr class="divider">
                 <form id="form-crear-exp">
                     <input type="hidden" id="exp-is-edit" value="0">
@@ -130,7 +139,7 @@
                         <textarea id="exp-observations" rows="3" placeholder="Anotaciones adicionales o antecedentes del expediente..."></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn">Guardar Expediente</button>
+                        <button type="submit" class="btn btn-primary">Guardar Expediente</button>
                         <button type="button" id="btn-cancelar-crear" class="btn btn-secondary">Cancelar</button>
                     </div>
                 </form>
@@ -147,17 +156,17 @@
                 </div>
                 <hr class="divider">
 
-                <div class="form-group action-write" id="zona-carga">
-                    <label for="input-archivo-doc"><strong>Adjuntar Documento Digital (PDF) al Expediente Cloud:</strong></label>
+                <div class="form-group action-write upload-panel" id="zona-carga">
+                    <label for="input-archivo-doc"><strong>Adjuntar Documento Digital (PDF) a la Bóveda Cloud:</strong></label>
                     <div class="upload-control-group">
                         <input type="file" id="input-archivo-doc" accept=".pdf,application/pdf">
-                        <button type="button" id="btn-asociar-doc" class="btn">Cargar a la Nube (S3 Vault)</button>
+                        <button type="button" id="btn-asociar-doc" class="btn btn-primary">Cargar a la Nube (S3 Vault)</button>
                     </div>
                 </div>
 
                 <h3>Documentos Digitales Asociados</h3>
                 <div class="table-responsive">
-                    <table>
+                    <table class="table-styled">
                         <thead>
                             <tr>
                                 <th>Nombre del Archivo</th>
