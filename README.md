@@ -87,6 +87,7 @@ Sistema-de-Gesti-n-Documental/
 1. **Separación de Intereses (*Separation of Concerns*)**: Los recursos estáticos (`assets/`) y el código fuente (`src/`) están aislados, facilitando el mantenimiento y rediseño visual sin alterar la lógica de negocio.
 2. **Independencia Tecnológica**: La capa de dominio (`src/domain/`) no tiene dependencias externas ni de frameworks; puede reutilizarse en backend o migrarse a TypeScript sin fricción.
 3. **Estandarización Enterprise**: La convención `src/` y `assets/` es el estándar global en frameworks e industrias de desarrollo de software.
+4. **Documentación JSDoc en Inglés**: Todo el código fuente no trivial está formalmente documentado bajo el estándar JSDoc en inglés técnico (`@param`, `@returns`, `@throws`).
 
 ---
 
@@ -115,7 +116,7 @@ La plataforma implementa un modelo de **Control de Acceso Basado en Roles (RBAC)
 - Acciones según rol activo                 - Actualización de agregados             - Eliminación (Solo Admin)
 ```
 
-1. **Módulo 1 (Autenticación y Sesión)**: Gestión de tokens de sesión en `sessionStorage` y emisión de eventos `AUTH_STATE_CHANGED` para adaptar dinámicamente la UI según el rol.
+1. **Módulo 1 (Autenticación y Sesión)**: Gestión de tokens de sesión en `sessionStorage` y emisión de eventos `AUTH_STATE_CHANGED` para adaptar dinámicamente la UI según el rol activo.
 2. **Módulo 2 (Catálogo de Expedientes y Búsqueda Multicriterio)**: Listado ordenado por Tablas de Retención Documental (TRD) con filtrado instantáneo por código, serie, subserie o ubicación física (*Archivo de Gestión*, *Archivo Central*, *Archivo Histórico*).
 3. **Módulo 3 (Registro y Modificación TRD)**: Formulario con validación de invariantes de dominio (código obligatorio, coherencia cronológica de fechas inicial y final).
 4. **Módulo 4 (Bóveda Documental Cloud)**: Carga asíncrona de archivos PDF procesados mediante el adaptador `CloudStorageAdapter`, asignación de URI de almacenamiento (`s3://samana-document-vault-prod/...`) y descarga segura de documentos.
@@ -173,16 +174,116 @@ flowchart LR
     Admin --> CU7
 ```
 
-### 6.2 Diagrama de Despliegue en la Nube
+### 6.2 Diagrama de Clases (DDD & SOLID)
+```mermaid
+classDiagram
+    class User {
+        +String id
+        +String email
+        +String role
+        +String name
+        +can(permission) Boolean
+    }
+
+    class DocumentFile {
+        +String id
+        +String name
+        +String mimeType
+        +Number sizeBytes
+        +Date uploadDate
+        +String storageUrl
+    }
+
+    class RecordArchive {
+        +String code
+        +String series
+        +String subseries
+        +String location
+        +Date startDate
+        +Date endDate
+        +String observations
+        +List~DocumentFile~ documents
+        +validate() void
+        +addDocument(doc) void
+        +removeDocument(docId) void
+    }
+
+    class IRecordRepository {
+        <<interface>>
+        +getAll() Promise
+        +getByCode(code) Promise
+        +save(record) Promise
+        +delete(code) Promise
+    }
+
+    class IStorageService {
+        <<interface>>
+        +upload(file) Promise
+        +getDownloadUrl(url) Promise
+    }
+
+    class LocalStorageRecordRepository {
+        -Map cache
+        +getAll()
+        +getByCode()
+        +save()
+        +delete()
+    }
+
+    class CloudStorageAdapter {
+        -String bucketName
+        +upload()
+        +getDownloadUrl()
+    }
+
+    class RoleStrategy {
+        <<abstract>>
+        +getPermissions() List
+        +hasPermission(perm) Boolean
+    }
+
+    IRecordRepository <|.. LocalStorageRecordRepository
+    IStorageService <|.. CloudStorageAdapter
+    RecordArchive "1" *-- "0..*" DocumentFile : Aggregate
+    User o-- RoleStrategy : Strategy Pattern
+```
+
+### 6.3 Diagrama de Secuencia (Carga Cloud con RBAC)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Funcionario / Admin
+    participant View as AppController (UI)
+    participant Auth as AuthService (RBAC)
+    participant Svc as RecordService (Application)
+    participant Storage as CloudStorageAdapter (Adapter)
+    participant Repo as LocalStorageRecordRepository (Repo)
+    participant Bus as EventBus (Observer)
+
+    U->>View: Selecciona archivo PDF y pulsa "Cargar"
+    View->>Svc: attachDocument(recordCode, file)
+    Svc->>Auth: assertPermission(UPLOAD_DOCUMENT)
+    Auth-->>Svc: Authorization OK
+    Svc->>Storage: upload(file)
+    Storage-->>Svc: Metadata (s3://bucket/key)
+    Svc->>Svc: RecordFactory.createDocument()
+    Svc->>Repo: save(recordAggregate)
+    Repo-->>Svc: Saved
+    Svc->>Bus: publish(DOCUMENT_ATTACHED)
+    Bus-->>View: Event Received
+    View-->>U: Actualiza tabla y muestra Toast de éxito
+```
+
+### 6.4 Diagrama de Despliegue en la Nube
 ```mermaid
 flowchart TB
-    subgraph Client Tier
-        Browser["Navegador Web (SPA Vanilla JS ES6 Modules)"]
+    subgraph ClientTier["Client Tier"]
+        Browser["Navegador Web - SPA Vanilla JS ES6 Modules"]
     end
 
     subgraph CloudEdge["Cloud Edge Tier"]
         CDN["GitHub Pages CDN / Fastly Edge Network"]
-        StaticBucket["Static Web Hosting (assets/ y src/)"]
+        StaticBucket["Static Web Hosting - assets y src"]
     end
 
     subgraph CloudStorage["Cloud Storage Tier"]
