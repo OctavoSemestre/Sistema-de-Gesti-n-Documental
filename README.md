@@ -7,9 +7,86 @@ Prototipo de software arquitectónico para la digitalización, custodia y admini
 
 ---
 
-## 1. Guía de Ingreso y Perfiles de Usuario (RBAC)
+## 1. Guía de Ejecución en Entorno Local
 
-La plataforma cuenta con un sistema de **Control de Acceso Basado en Roles (RBAC)** gestionado a través del patrón de diseño *Strategy*. Para ingresar, seleccione el perfil deseado en el formulario de inicio de sesión:
+Para ejecutar la aplicación localmente en su estación de trabajo, clone el repositorio principal desde la rama **`main`**:
+
+### Paso 1: Clonar el Repositorio
+```bash
+git clone https://github.com/octavosemestre/Sistema-de-Gesti-n-Documental.git
+cd Sistema-de-Gesti-n-Documental
+```
+
+*(Por defecto, el repositorio se posiciona en la rama **`main`**).*
+
+---
+
+### Paso 2: Iniciar un Servidor Web Local
+Debido a que el proyecto utiliza módulos nativos de JavaScript (**ES6 Modules** con `type="module"`), los navegadores web modernos exigen que los archivos se sirvan a través del protocolo HTTP/HTTPS (y no mediante `file://`) por políticas de seguridad CORS del navegador.
+
+Seleccione cualquiera de las siguientes alternativas según las herramientas instaladas en su equipo:
+
+#### Opción A: Con Python 3 (Recomendada y universal en Linux/macOS/Windows)
+```bash
+python3 -m http.server 8080
+```
+*Abra en su navegador:* `http://localhost:8080`
+
+#### Opción B: Con Node.js (`npx`)
+```bash
+# Sin necesidad de instalar paquetes globales
+npx serve .
+# o alternativamente:
+npx http-server -p 8080
+```
+*Abra en su navegador:* `http://localhost:3000` o `http://localhost:8080`
+
+#### Opción C: Con Visual Studio Code (Extensión Live Server)
+1. Abra la carpeta del proyecto en VS Code.
+2. Instale la extensión **Live Server** (de Ritwick Dey).
+3. Haga clic derecho sobre `index.html` y seleccione **"Open with Live Server"**.
+
+#### Opción D: Con PHP (si cuenta con entorno LAMP/XAMPP)
+```bash
+php -S localhost:8080
+```
+
+---
+
+## 2. Organización y Claridad de la Estructura de Directorios
+
+La estructura de carpetas ha sido diseñada siguiendo el estándar de **Arquitectura Limpia / Puertos y Adaptadores (Hexagonal)**, lo que garantiza nombres autodescriptivos, alta cohesión y bajo acoplamiento:
+
+```text
+Sistema-de-Gesti-n-Documental/
+├── index.html                   # Vista principal semántica, accesible y dinámica
+├── styles.css                   # Sistema de diseño responsivo y paleta institucional
+├── README.md                    # Documentación técnica, manual de usuario y diagramas
+├── logo.png                     # Escudo y logotipo oficial de la Alcaldía de Samaná
+└── js/                          # Núcleo modular en JavaScript ES6
+    ├── domain/                  # CAPA 1: DOMINIO (Reglas de negocio puras e invariantes)
+    │   ├── roles.js             # Enums Role/Permission y Strategy Pattern para RBAC
+    │   └── models.js            # Entidades RecordArchive, DocumentFile, User y RecordFactory
+    ├── application/             # CAPA 2: APLICACIÓN (Casos de uso y orquestación)
+    │   ├── authService.js       # Autenticación y evaluación de políticas de seguridad
+    │   └── recordService.js     # Gestión de expedientes, TRD y carga documental
+    ├── infrastructure/          # CAPA 3: INFRAESTRUCTURA (Adaptadores y persistencia)
+    │   ├── eventBus.js          # Observer Pattern (EventBus desacoplado)
+    │   ├── storageAdapter.js    # Adapter Pattern para Cloud Storage (AWS S3 Vault)
+    │   └── recordRepository.js  # Repository Pattern con soporte de Cache-Aside
+    └── app.js                   # CAPA 4: PRESENTACIÓN (Controlador reactivo y binding UI)
+```
+
+### ¿Por qué esta organización es óptima y clara?
+1. **Nombres Semánticos en Inglés Técnico**: Cada carpeta y archivo describe con precisión su única responsabilidad arquitectónica (`domain`, `application`, `infrastructure`, `roles.js`, `storageAdapter.js`).
+2. **Independencia Tecnológica**: Si se sustituye la interfaz visual o la base de datos, el código del dominio (`js/domain/`) permanece 100% intacto.
+3. **Cero Dependencias Pesadas**: Funciona directamente en cualquier navegador moderno sin requerir empaquetadores como Webpack o Vite.
+
+---
+
+## 3. Credenciales y Perfiles de Acceso (RBAC)
+
+La plataforma implementa un modelo de **Control de Acceso Basado en Roles (RBAC)** evaluado a nivel de dominio mediante el patrón *Strategy*:
 
 | Perfil / Rol | Correo Electrónico | Contraseña | Alcance de Permisos |
 | :--- | :--- | :---: | :--- |
@@ -19,9 +96,7 @@ La plataforma cuenta con un sistema de **Control de Acceso Basado en Roles (RBAC
 
 ---
 
-## 2. Funcionamiento Integral de la Plataforma
-
-La aplicación opera como una **Single Page Application (SPA)** modular y reactiva estructurada en 4 módulos operativos:
+## 4. Funcionamiento de los Módulos de la Plataforma
 
 ```
 [ Pantalla de Login ] ──(Autenticación RBAC)──> [ Panel Principal ]
@@ -34,61 +109,14 @@ La aplicación opera como una **Single Page Application (SPA)** modular y reacti
 - Acciones según rol activo                 - Actualización de agregados             - Eliminación (Solo Admin)
 ```
 
-### 2.1 Módulo 1: Autenticación y Gestión de Sesión
-1. El usuario ingresa sus credenciales y selecciona su rol operativo.
-2. La capa de aplicación (`AuthService`) valida las credenciales y resuelve la estrategia de permisos (`RoleStrategy`) correspondiente.
-3. El estado de sesión se almacena de forma segura en `sessionStorage` y se emite un evento global (`AUTH_STATE_CHANGED`) que adapta la interfaz de usuario dinámicamente según los privilegios otorgados.
-
-### 2.2 Módulo 2: Consulta de Expedientes y Búsqueda en Tiempo Real
-* **Catálogo de Archivo**: Lista los expedientes clasificados por Serie, Subserie y Ubicación física (*Archivo de Gestión*, *Archivo Central*, *Archivo Histórico*).
-* **Filtro Multicriterio**: La barra de búsqueda filtra instantáneamente por código, serie, subserie u observaciones sin recargar la página ni realizar peticiones bloqueantes.
-* **Contador de Documentos**: Muestra en tiempo real la cantidad de archivos electrónicos asociados a cada expediente.
-
-### 2.3 Módulo 3: Registro y Modificación de Expedientes (TRD)
-1. Al hacer clic en **"+ Nuevo Expediente"** (disponible para *Administrador* y *Funcionario*), se despliega el formulario de retención documental.
-2. **Validaciones de Dominio**:
-   * Código de expediente único y obligatorio.
-   * Series y Subseries normalizadas.
-   * Coherencia cronológica (la fecha final no puede ser anterior a la fecha inicial).
-3. Al guardar, el agregado `RecordArchive` se persiste a través del repositorio (`RecordRepository`) y se notifica al sistema mediante un toast de confirmación.
-4. **Edición**: Al pulsar "Editar", el formulario se precarga con los datos del expediente seleccionado permitiendo su actualización controlada.
-
-### 2.4 Módulo 4: Bóveda Documental Cloud (Gestión de Archivos Digitales)
-1. Al pulsar el botón **"Documentos"** en cualquier expediente, se abre el visor de la bóveda digital.
-2. **Carga a la Nube (AWS S3 Adapter)**:
-   * El usuario selecciona un archivo digital (formato PDF).
-   * El servicio `CloudStorageAdapter` procesa el archivo, genera un identificador de objeto cloud (`s3://samana-document-vault-prod/...`) y persiste el contenido en el almacén de objetos.
-3. **Descarga Segura**: Los usuarios con permiso pueden descargar directamente el archivo digital original almacenado.
-4. **Eliminación**: Exclusiva para el rol *Administrador*, asegurando la custodia y trazabilidad de los documentos oficiales.
+1. **Módulo 1 (Autenticación y Sesión)**: Gestión de tokens de sesión en `sessionStorage` y emisión de eventos `AUTH_STATE_CHANGED` para adaptar dinámicamente la UI según el rol.
+2. **Módulo 2 (Catálogo de Expedientes y Búsqueda Multicriterio)**: Listado ordenado por Tablas de Retención Documental (TRD) con filtrado instantáneo por código, serie, subserie o ubicación física (*Archivo de Gestión*, *Archivo Central*, *Archivo Histórico*).
+3. **Módulo 3 (Registro y Modificación TRD)**: Formulario con validación de invariantes de dominio (código obligatorio, coherencia cronológica de fechas inicial y final).
+4. **Módulo 4 (Bóveda Documental Cloud)**: Carga asíncrona de archivos PDF procesados mediante el adaptador `CloudStorageAdapter`, asignación de URI de almacenamiento (`s3://samana-document-vault-prod/...`) y descarga segura de documentos.
 
 ---
 
-## 3. Arquitectura de Software
-
-La aplicación sigue una **Arquitectura Limpia / Hexagonal** modular en capas desacopladas:
-
-```
-Sistema-de-Gesti-n-Documental/
-├── index.html                   # Vista principal semántica y dinámica
-├── styles.css                   # Sistema de diseño responsivo y accesible
-├── README.md                    # Documentación técnica y manual de usuario
-└── js/
-    ├── domain/                  # DOMINIO: Modelos, Entidades, Value Objects y RBAC
-    │   ├── roles.js             # Enums Role/Permission y Strategy Pattern
-    │   └── models.js            # Entidades RecordArchive, DocumentFile, User y RecordFactory
-    ├── application/             # APLICACIÓN: Casos de uso y orquestación
-    │   ├── authService.js       # Autenticación y evaluación de políticas de seguridad
-    │   └── recordService.js     # Lógica de negocio, TRD y carga documental
-    ├── infrastructure/          # INFRAESTRUCTURA: Persistencia y adaptadores
-    │   ├── eventBus.js          # Observer Pattern (EventBus desacoplado)
-    │   ├── storageAdapter.js    # Adapter Pattern para Cloud Storage (AWS S3 / Vault)
-    │   └── recordRepository.js  # Repository Pattern con soporte de Cache-Aside
-    └── app.js                   # PRESENTACIÓN: Controlador y vinculación reactiva
-```
-
----
-
-## 4. Patrones de Diseño Aplicados
+## 5. Patrones de Diseño Implementados
 
 | Patrón | Clasificación | Archivo de Implementación | Justificación Técnica |
 | :--- | :--- | :--- | :--- |
@@ -101,9 +129,9 @@ Sistema-de-Gesti-n-Documental/
 
 ---
 
-## 5. Diagramas UML
+## 6. Diagramas UML
 
-### 5.1 Diagrama de Casos de Uso
+### 6.1 Diagrama de Casos de Uso
 ```mermaid
 flowchart LR
     Admin((Administrador))
@@ -139,7 +167,7 @@ flowchart LR
     Admin --> CU7
 ```
 
-### 5.2 Diagrama de Despliegue en la Nube
+### 6.2 Diagrama de Despliegue en la Nube
 ```mermaid
 flowchart TB
     subgraph Client Tier
@@ -161,27 +189,3 @@ flowchart TB
     Browser -->|IStorageService Adapter| S3Docs
     Browser -->|IRecordRepository| LocalStore
 ```
-
----
-
-## 6. Instrucciones de Ejecución
-
-### Ejecución en la Nube (Producción)
-Acceder directamente mediante cualquier navegador a:
-👉 [https://octavosemestre.github.io/Sistema-de-Gesti-n-Documental/](https://octavosemestre.github.io/Sistema-de-Gesti-n-Documental/)
-
-### Ejecución Local
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/octavosemestre/Sistema-de-Gesti-n-Documental.git
-   cd Sistema-de-Gesti-n-Documental
-   ```
-2. Cambiar a la rama de arquitectura limpia:
-   ```bash
-   git checkout feature/clean-architecture
-   ```
-3. Iniciar un servidor HTTP local:
-   ```bash
-   python3 -m http.server 8080
-   ```
-4. Abrir en el navegador: `http://localhost:8080`.
