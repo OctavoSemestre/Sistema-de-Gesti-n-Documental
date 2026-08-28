@@ -1,6 +1,6 @@
 # Sistema de Gestión Documental - Alcaldía Municipal de Samaná
 
-Prototipo de software arquitectónico para la digitalización, custodia y administración del acervo documental municipal, desarrollado bajo principios de **Domain-Driven Design (DDD)**, **SOLID**, **DRY** y patrones de diseño para computación en la nube.
+Prototipo de software arquitectónico para la digitalización, custodia y administración del acervo documental municipal, desarrollado bajo principios de **Domain-Driven Design (DDD)**, **Clean Architecture**, **SOLID**, **DRY** y patrones de diseño para computación en la nube.
 
 > **Acceso a la Aplicación en la Nube (GitHub Pages):**  
 > 🔗 [https://octavosemestre.github.io/Sistema-de-Gesti-n-Documental/](https://octavosemestre.github.io/Sistema-de-Gesti-n-Documental/)
@@ -53,22 +53,28 @@ php -S localhost:8080
 
 ---
 
-## 2. Organización y Claridad de la Estructura de Directorios
+## 2. Organización y Arquitectura de Directorios
 
-La estructura de carpetas ha sido diseñada siguiendo el estándar de **Arquitectura Limpia / Puertos y Adaptadores (Hexagonal)**, lo que garantiza nombres autodescriptivos, alta cohesión y bajo acoplamiento:
+La estructura de carpetas sigue el estándar de **Clean Architecture / Puertos y Adaptadores (Hexagonal)**, separando estrictamente los recursos estáticos (`assets/`) del código fuente del dominio (`src/`):
 
 ```text
 Sistema-de-Gesti-n-Documental/
-├── index.html                   # Vista principal semántica, accesible y dinámica
-├── styles.css                   # Sistema de diseño responsivo y paleta institucional
+├── index.html                   # Punto de entrada a la SPA (Vista única y accesible)
 ├── README.md                    # Documentación técnica, manual de usuario y diagramas
-├── logo.png                     # Escudo y logotipo oficial de la Alcaldía de Samaná
-└── js/                          # Núcleo modular en JavaScript ES6
+├── .gitignore                   # Exclusión de archivos de sistema, temporales y editores
+│
+├── assets/                      # RECURSOS ESTÁTICOS
+│   ├── css/
+│   │   └── styles.css           # Sistema de diseño responsivo y paleta institucional
+│   └── images/
+│       └── logo.png             # Escudo y logotipo oficial de la Alcaldía de Samaná
+│
+└── src/                         # CÓDIGO FUENTE DE LA ARQUITECTURA (CLEAN ARCHITECTURE)
     ├── domain/                  # CAPA 1: DOMINIO (Reglas de negocio puras e invariantes)
     │   ├── roles.js             # Enums Role/Permission y Strategy Pattern para RBAC
     │   └── models.js            # Entidades RecordArchive, DocumentFile, User y RecordFactory
     ├── application/             # CAPA 2: APLICACIÓN (Casos de uso y orquestación)
-    │   ├── authService.js       # Autenticación y evaluación de políticas de seguridad
+    │   ├── authService.js       # Autenticación y aserción de políticas de seguridad
     │   └── recordService.js     # Gestión de expedientes, TRD y carga documental
     ├── infrastructure/          # CAPA 3: INFRAESTRUCTURA (Adaptadores y persistencia)
     │   ├── eventBus.js          # Observer Pattern (EventBus desacoplado)
@@ -77,10 +83,10 @@ Sistema-de-Gesti-n-Documental/
     └── app.js                   # CAPA 4: PRESENTACIÓN (Controlador reactivo y binding UI)
 ```
 
-### ¿Por qué esta organización es óptima y clara?
-1. **Nombres Semánticos en Inglés Técnico**: Cada carpeta y archivo describe con precisión su única responsabilidad arquitectónica (`domain`, `application`, `infrastructure`, `roles.js`, `storageAdapter.js`).
-2. **Independencia Tecnológica**: Si se sustituye la interfaz visual o la base de datos, el código del dominio (`js/domain/`) permanece 100% intacto.
-3. **Cero Dependencias Pesadas**: Funciona directamente en cualquier navegador moderno sin requerir empaquetadores como Webpack o Vite.
+### Justificación de Buenas Prácticas:
+1. **Separación de Intereses (*Separation of Concerns*)**: Los recursos estáticos (`assets/`) y el código fuente (`src/`) están aislados, facilitando el mantenimiento y rediseño visual sin alterar la lógica de negocio.
+2. **Independencia Tecnológica**: La capa de dominio (`src/domain/`) no tiene dependencias externas ni de frameworks; puede reutilizarse en backend o migrarse a TypeScript sin fricción.
+3. **Estandarización Enterprise**: La convención `src/` y `assets/` es el estándar global en frameworks e industrias de desarrollo de software.
 
 ---
 
@@ -120,12 +126,12 @@ La plataforma implementa un modelo de **Control de Acceso Basado en Roles (RBAC)
 
 | Patrón | Clasificación | Archivo de Implementación | Justificación Técnica |
 | :--- | :--- | :--- | :--- |
-| **Repository Pattern** | Estructural / DDD | `js/infrastructure/recordRepository.js` | Desacopla la lógica de negocio de la fuente de persistencia (LocalStorage, DynamoDB o PostgreSQL). |
-| **Strategy Pattern** | Comportamiento | `js/domain/roles.js` | Modela las políticas de autorización de cada rol sin utilizar condicionales anidados, cumpliendo el principio Open/Closed. |
-| **Factory Method** | Creacional | `js/domain/models.js` | Centraliza la instanciación e invariantes de los agregados `RecordArchive` y `DocumentFile`. |
-| **Observer Pattern** | Comportamiento | `js/infrastructure/eventBus.js` | Permite la comunicación asíncrona y reactiva entre capas (`RECORD_CREATED`, `DOCUMENT_ATTACHED`, `UI_NOTIFICATION`). |
-| **Adapter Pattern** | Estructural / Cloud | `js/infrastructure/storageAdapter.js` | Implementa la interfaz `IStorageService` para interactuar con almacenamiento de objetos en la nube (AWS S3 / Azure Blob). |
-| **Cache-Aside Pattern** | Arquitectura Cloud | `js/infrastructure/recordRepository.js` | Mantiene una caché en memoria sincronizada para minimizar costos y latencia de lecturas en la nube. |
+| **Repository Pattern** | Estructural / DDD | `src/infrastructure/recordRepository.js` | Desacopla la lógica de negocio de la fuente de persistencia (LocalStorage, DynamoDB o PostgreSQL). |
+| **Strategy Pattern** | Comportamiento | `src/domain/roles.js` | Modela las políticas de autorización de cada rol sin utilizar condicionales anidados, cumpliendo el principio Open/Closed. |
+| **Factory Method** | Creacional | `src/domain/models.js` | Centraliza la instanciación e invariantes de los agregados `RecordArchive` y `DocumentFile`. |
+| **Observer Pattern** | Comportamiento | `src/infrastructure/eventBus.js` | Permite la comunicación asíncrona y reactiva entre capas (`RECORD_CREATED`, `DOCUMENT_ATTACHED`, `UI_NOTIFICATION`). |
+| **Adapter Pattern** | Estructural / Cloud | `src/infrastructure/storageAdapter.js` | Implementa la interfaz `IStorageService` para interactuar con almacenamiento de objetos en la nube (AWS S3 / Azure Blob). |
+| **Cache-Aside Pattern** | Arquitectura Cloud | `src/infrastructure/recordRepository.js` | Mantiene una caché en memoria sincronizada para minimizar costos y latencia de lecturas en la nube. |
 
 ---
 
@@ -170,13 +176,13 @@ flowchart LR
 ### 6.2 Diagrama de Despliegue en la Nube
 ```mermaid
 flowchart TB
-    subgraph ClientTier["Client Tier"]
-        Browser["Navegador Web - SPA Vanilla JS ES6"]
+    subgraph Client Tier
+        Browser["Navegador Web (SPA Vanilla JS ES6 Modules)"]
     end
 
     subgraph CloudEdge["Cloud Edge Tier"]
         CDN["GitHub Pages CDN / Fastly Edge Network"]
-        StaticBucket["Static Web Hosting - assets y src"]
+        StaticBucket["Static Web Hosting (assets/ y src/)"]
     end
 
     subgraph CloudStorage["Cloud Storage Tier"]
