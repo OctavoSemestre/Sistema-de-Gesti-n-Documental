@@ -1,7 +1,3 @@
-/**
- * Observer Pattern / Event Bus Implementation for Loose Coupling
- */
-
 export const SystemEvents = Object.freeze({
     AUTH_STATE_CHANGED: 'AUTH_STATE_CHANGED',
     RECORD_CREATED: 'RECORD_CREATED',
@@ -17,22 +13,36 @@ export class EventBus {
         this._listeners = new Map();
     }
 
+    /**
+     * Subscribes a callback to an event topic and returns a disposal function.
+     * @param {string} event - Topic identifier from SystemEvents.
+     * @param {Function} callback - Event handler function.
+     * @returns {Function} Unsubscribe handler.
+     */
     subscribe(event, callback) {
         if (!this._listeners.has(event)) {
             this._listeners.set(event, new Set());
         }
         this._listeners.get(event).add(callback);
 
-        // Return unsubscribe handle
         return () => this.unsubscribe(event, callback);
     }
 
+    /**
+     * @param {string} event
+     * @param {Function} callback
+     */
     unsubscribe(event, callback) {
         if (this._listeners.has(event)) {
             this._listeners.get(event).delete(callback);
         }
     }
 
+    /**
+     * Publishes a payload to all registered listeners of a topic.
+     * @param {string} event - Topic identifier.
+     * @param {*} [payload] - Data dispatched to listeners.
+     */
     publish(event, payload = null) {
         if (this._listeners.has(event)) {
             this._listeners.get(event).forEach(callback => {
@@ -46,5 +56,4 @@ export class EventBus {
     }
 }
 
-// Global Singleton Instance
 export const globalEventBus = new EventBus();
