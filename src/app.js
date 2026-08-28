@@ -122,7 +122,7 @@ class AppController {
 
         this.pantallaLogin.classList.add('hidden');
         this.appMain.classList.remove('hidden');
-        this.usuarioInfo.innerText = `${user.name} (${user.role})`;
+        this.usuarioInfo.innerHTML = `👤 Rol: <strong>${this._escapeHtml(user.role)}</strong>`;
 
         // Apply RBAC UI visibility
         const canWrite = user.can(Permission.CREATE_RECORD);
